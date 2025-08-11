@@ -5,6 +5,7 @@ interface Props<T> {
   wrapper: MaybeRefOrGetter<HTMLElement | null>
   itemSize: number
   buffer?: number
+  orientation?: 'vertical' | 'horizontal'
 }
 
 export function useVScroll<T> (props: Props<T>) {
@@ -13,6 +14,7 @@ export function useVScroll<T> (props: Props<T>) {
     wrapper,
     itemSize = 0,
     buffer = 10,
+    orientation = 'vertical'
   } = props
 
   const unrefItems = computed(() => toValue(items))
@@ -33,7 +35,9 @@ export function useVScroll<T> (props: Props<T>) {
     reset()
     if (newValue) {
       nextTick(() => {
-        viewAreaSize.value = newValue.getBoundingClientRect().height
+        viewAreaSize.value = orientation === 'vertical'
+          ? newValue.getBoundingClientRect().height
+          : newValue.getBoundingClientRect().width
         fill()
       })
     }
@@ -52,7 +56,9 @@ export function useVScroll<T> (props: Props<T>) {
     const target = event.target as HTMLElement | null
     if (!target) return
 
-    const newScrollVal = target.scrollTop
+    const newScrollVal = orientation === 'vertical'
+      ? target.scrollTop
+      : target.scrollLeft
     updateScrollDiff(newScrollVal)
 
     scrollVal.value = newScrollVal

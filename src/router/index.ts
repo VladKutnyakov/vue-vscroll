@@ -18,6 +18,12 @@ const router = createRouter({
               path: 'vertical',
               name: 'examplesComposableVertical',
               component: () => import('@/pages/examples/composable/ComposableVertical.vue')
+            },
+            {
+              
+              path: 'horizontal',
+              name: 'examplesComposableHorizontal',
+              component: () => import('@/pages/examples/composable/ComposableHorizontal.vue')
             }
           ]
         }

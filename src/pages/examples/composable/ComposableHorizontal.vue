@@ -3,8 +3,9 @@
       <div
         class="container"
         :style="{
-          paddingTop: `${sizeBefore}px`,
-          paddingBottom: `${sizeAfter}px`
+          paddingLeft: `${sizeBefore}px`,
+          paddingRight: `${sizeAfter}px`,
+          width: `${sizeRendered}px`,
         }"
       >
         <div
@@ -35,11 +36,12 @@ const items = ref<Item[]>(Array.from(Array.from({ length: 100000 }).keys())
     title: i.toString(),
   })))
 
-const { itemsRendered, sizeBefore, sizeAfter } = useVScroll({
+const { itemsRendered, sizeBefore, sizeAfter, sizeRendered } = useVScroll({
   items,
   wrapper,
-  itemSize: 30,
+  itemSize: 60,
   buffer: 5,
+  orientation: 'horizontal',
 })
 </script>
 
@@ -51,12 +53,13 @@ const { itemsRendered, sizeBefore, sizeAfter } = useVScroll({
 }
 
 .container {
+  display: flex;
   background-color: #eeeeee;
 }
 
 .item {
-  padding: 4px 0;
-  height: 22px;
-  width: 2000px;
+  padding: 0 4px;
+  flex: 52px 0 0;
+  height: 20px;
 }
 </style>
