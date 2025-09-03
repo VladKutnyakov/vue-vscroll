@@ -53,20 +53,20 @@ export function useVScroll<T> (props: Props<T>) {
   })
 
   function handleScroll (event: Event) {
-    const target = event.target as HTMLElement | null
-    if (!target) return
+    requestAnimationFrame(() => {
+      const target = event.target as HTMLElement | null
+      if (!target) return
 
-    const newScrollVal = orientation === 'vertical'
-      ? target.scrollTop
-      : target.scrollLeft
-    updateScrollDiff(newScrollVal)
+      const newScrollVal = orientation === 'vertical'
+        ? target.scrollTop
+        : target.scrollLeft
+      updateScrollDiff(newScrollVal)
 
-    scrollVal.value = newScrollVal
+      scrollVal.value = newScrollVal
+    })
   }
 
   function updateScrollDiff (newScrollVal: number) {
-    if (!itemSize) return
-
     scrollDiff.value += newScrollVal - scrollVal.value
 
     if (scrollDiff.value >= itemSize) {
@@ -74,17 +74,17 @@ export function useVScroll<T> (props: Props<T>) {
         if (indexEnd.value !== unrefItems.value.length) {
           addToEnd()
         }
-        if (newScrollVal >= buffer * itemSize) {
+        if (newScrollVal - scrollDiff.value >= buffer * itemSize) {
           removeFromStart()
         }
         scrollDiff.value -= itemSize
       }
-    } else if (scrollDiff.value <= -itemSize) {
-      while (Math.abs(scrollDiff.value) >= itemSize) {
+    } else if (scrollDiff.value < 0) {
+      while (scrollDiff.value < 0) {
         if (indexStart.value !== 0) {
           addToStart()
         }
-        if (newScrollVal + viewAreaSize.value <= (unrefItems.value.length - buffer) * itemSize) {
+        if (newScrollVal - scrollDiff.value + viewAreaSize.value <= (unrefItems.value.length - buffer) * itemSize) {
           removeFromEnd()
         }
         scrollDiff.value += itemSize
@@ -93,11 +93,18 @@ export function useVScroll<T> (props: Props<T>) {
   }
 
   function fill () {
-    if (!itemSize) return
-    while (indexStart.value > 0 && indexEnd.value - indexStart.value < buffer) {
+    if (!unrefWrapper.value) return
+
+    const scrolledValue = orientation === 'vertical'
+      ? unrefWrapper.value.scrollTop
+      : unrefWrapper.value.scrollLeft
+    const indexInitial = Math.floor(scrolledValue / itemSize)
+    indexStart.value = indexInitial
+    indexEnd.value = indexInitial
+    while (indexStart.value > 0 && indexInitial - indexStart.value < buffer) {
       addToStart()
     }
-    while (indexEnd.value < Math.min(unrefItems.value.length, Math.ceil(viewAreaSize.value / itemSize) + buffer)) {
+    while (indexEnd.value < Math.min(unrefItems.value.length, indexInitial + Math.ceil(viewAreaSize.value / itemSize) + buffer)) {
       addToEnd()
     }
   }
