@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "vitest": {
+      "source": "antfu/skills",
+      "sourceType": "github",
+      "computedHash": "0efd9cf8c56aada060d418d009cfe621a7915d0c73a958fe611985bc0c2fa4b8"
+    },
     "vue": {
       "source": "antfu/skills",
       "sourceType": "github",
