@@ -1,8 +1,5 @@
 import { computed, nextTick, onBeforeUnmount, ref, toValue, watch, type MaybeRefOrGetter, type Ref } from "vue"
 
-/**
- * Props for the useVScroll composable
- */
 interface Props<T> {
   /** The items to render in the virtual list */
   items: MaybeRefOrGetter<T[]>
@@ -41,7 +38,6 @@ export function useVScroll<T> (props: Props<T>) {
     orientation = 'vertical'
   } = props
 
-  // Validate itemSize
   if (itemSize <= 0) {
     throw new Error('itemSize must be greater than 0')
   }
@@ -61,7 +57,6 @@ export function useVScroll<T> (props: Props<T>) {
   const sizeAfter = computed(() => (unrefItems.value.length - indexEnd.value) * itemSize)
   const sizeRendered = computed(() => itemsRendered.value.length * itemSize)
 
-  // Clean up resources
   const cleanup = () => {
     if (rafId) {
       cancelAnimationFrame(rafId)
@@ -77,7 +72,6 @@ export function useVScroll<T> (props: Props<T>) {
   watch(unrefWrapper, (newValue) => {
     cleanup()
     if (newValue) {
-      // Initialize view area size
       nextTick(() => {
         viewAreaSize.value = orientation === 'vertical'
           ? newValue.getBoundingClientRect().height
@@ -85,10 +79,8 @@ export function useVScroll<T> (props: Props<T>) {
         updateVisibleRange()
       })
 
-      // Set up scroll listener
       newValue.addEventListener('scroll', handleScroll, { passive: true })
 
-      // Set up resize observer
       resizeObserver = new ResizeObserver(() => {
         viewAreaSize.value = orientation === 'vertical'
           ? newValue.getBoundingClientRect().height
@@ -105,9 +97,6 @@ export function useVScroll<T> (props: Props<T>) {
     updateVisibleRange()
   })
 
-  /**
-   * Handles scroll events with requestAnimationFrame optimization
-   */
   function handleScroll (event: Event) {
     if (rafId) {
       cancelAnimationFrame(rafId)
@@ -126,9 +115,6 @@ export function useVScroll<T> (props: Props<T>) {
     })
   }
 
-  /**
-   * Updates the visible range of items based on scroll position
-   */
   function updateVisibleRange() {
     if (!unrefWrapper.value || !unrefItems.value.length) return
 
@@ -142,7 +128,6 @@ export function useVScroll<T> (props: Props<T>) {
       Math.ceil((scrolledValue + viewAreaSize.value) / itemSize) + buffer
     )
 
-    // Update indices only if they changed
     if (startIndex !== indexStart.value || endIndex !== indexEnd.value) {
       indexStart.value = startIndex
       indexEnd.value = endIndex
@@ -150,9 +135,6 @@ export function useVScroll<T> (props: Props<T>) {
     }
   }
 
-  /**
-   * Resets the scroll state
-   */
   function reset () {
     itemsRendered.value = []
     indexStart.value = 0
