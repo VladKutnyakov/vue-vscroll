@@ -16,7 +16,7 @@ interface Props<T> {
 /**
  * A Vue composable for implementing virtual scrolling
  * @param props - Configuration options for the virtual scroll
- * @returns Reactive properties and methods for virtual scrolling
+ * @returns Reactive properties for virtual scrolling
  * 
  * @example
  * ```ts
@@ -57,7 +57,24 @@ export function useVScroll<T> (props: Props<T>) {
   const sizeAfter = computed(() => (unrefItems.value.length - indexEnd.value) * itemSize)
   const sizeRendered = computed(() => itemsRendered.value.length * itemSize)
 
-  const cleanup = () => {
+  function getViewportSize(element: HTMLElement) {
+    return orientation === 'vertical'
+      ? element.getBoundingClientRect().height
+      : element.getBoundingClientRect().width
+  }
+
+  function getScrollValue(element: HTMLElement) {
+    return orientation === 'vertical'
+      ? element.scrollTop
+      : element.scrollLeft
+  }
+
+  function updateViewportSize(element: HTMLElement) {
+    viewAreaSize.value = getViewportSize(element)
+    updateVisibleRange()
+  }
+
+  function cleanup() {
     if (rafId) {
       cancelAnimationFrame(rafId)
       rafId = null
@@ -73,19 +90,13 @@ export function useVScroll<T> (props: Props<T>) {
     cleanup()
     if (newValue) {
       nextTick(() => {
-        viewAreaSize.value = orientation === 'vertical'
-          ? newValue.getBoundingClientRect().height
-          : newValue.getBoundingClientRect().width
-        updateVisibleRange()
+        updateViewportSize(newValue)
       })
 
       newValue.addEventListener('scroll', handleScroll, { passive: true })
 
       resizeObserver = new ResizeObserver(() => {
-        viewAreaSize.value = orientation === 'vertical'
-          ? newValue.getBoundingClientRect().height
-          : newValue.getBoundingClientRect().width
-        updateVisibleRange()
+        updateViewportSize(newValue)
       })
       resizeObserver.observe(newValue)
     }
@@ -97,7 +108,7 @@ export function useVScroll<T> (props: Props<T>) {
     updateVisibleRange()
   })
 
-  function handleScroll (event: Event) {
+  function handleScroll(event: Event) {
     if (rafId) {
       cancelAnimationFrame(rafId)
     }
@@ -106,11 +117,7 @@ export function useVScroll<T> (props: Props<T>) {
       const target = event.target as HTMLElement | null
       if (!target) return
 
-      const newScrollVal = orientation === 'vertical'
-        ? target.scrollTop
-        : target.scrollLeft
-      
-      scrollVal.value = newScrollVal
+      scrollVal.value = getScrollValue(target)
       updateVisibleRange()
     })
   }
@@ -118,9 +125,7 @@ export function useVScroll<T> (props: Props<T>) {
   function updateVisibleRange() {
     if (!unrefWrapper.value || !unrefItems.value.length) return
 
-    const scrolledValue = orientation === 'vertical'
-      ? unrefWrapper.value.scrollTop
-      : unrefWrapper.value.scrollLeft
+    const scrolledValue = getScrollValue(unrefWrapper.value)
 
     const startIndex = Math.max(0, Math.floor(scrolledValue / itemSize) - buffer)
     const endIndex = Math.min(
@@ -135,7 +140,7 @@ export function useVScroll<T> (props: Props<T>) {
     }
   }
 
-  function reset () {
+  function reset() {
     itemsRendered.value = []
     indexStart.value = 0
     indexEnd.value = 0
