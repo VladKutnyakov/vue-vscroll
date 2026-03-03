@@ -57,6 +57,5 @@ const { itemsRendered, sizeBefore, sizeAfter } = useVScroll({
 .item {
   padding: 4px 0;
   height: 22px;
-  width: 2000px;
 }
 </style>
