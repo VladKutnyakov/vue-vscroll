@@ -48,7 +48,6 @@ export function useVScroll<T> (props: Props<T>) {
   const itemsRendered: Ref<T[]> = ref([])
   const indexStart = ref(0)
   const indexEnd = ref(0)
-  const scrollVal = ref(0)
   const viewAreaSize = ref(0)
   let rafId: number | null = null
   let resizeObserver: ResizeObserver | null = null
@@ -117,7 +116,6 @@ export function useVScroll<T> (props: Props<T>) {
       const target = event.target as HTMLElement | null
       if (!target) return
 
-      scrollVal.value = getScrollValue(target)
       updateVisibleRange()
     })
   }
@@ -144,7 +142,6 @@ export function useVScroll<T> (props: Props<T>) {
     itemsRendered.value = []
     indexStart.value = 0
     indexEnd.value = 0
-    scrollVal.value = 0
   }
 
   onBeforeUnmount(() => {
